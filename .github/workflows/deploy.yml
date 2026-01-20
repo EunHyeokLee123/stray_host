@@ -38,6 +38,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Set lowercase owner
+        run: echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
       - name: Grant execute permission to gradlew
         run: chmod +x gradlew
 
@@ -52,12 +55,12 @@ jobs:
       - name: Build Docker Image
         run: |
           docker build \
-            -t ghcr.io/eunhyeok/${{ matrix.service }}:latest \
-            -t ghcr.io/eunhyeok/${{ matrix.service }}:${{ github.sha }} \
+            -t ghcr.io/${{ env.OWNER_LC }}/${{ matrix.service }}:latest \
+            -t ghcr.io/${{ env.OWNER_LC }}/${{ matrix.service }}:${{ github.sha }} \
             .
 
       #  Docker 이미지 푸시
       - name: Push Docker Image
         run: |
-          docker push ghcr.io/eunhyeok/${{ matrix.service }}:latest
-          docker push ghcr.io/eunhyeok/${{ matrix.service }}:${{ github.sha }}
+          docker push ghcr.io/${{ env.OWNER_LC }}/${{ matrix.service }}:latest
+          docker push ghcr.io/${{ env.OWNER_LC }}/${{ matrix.service }}:${{ github.sha }}
