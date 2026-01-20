@@ -13,12 +13,25 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        service:
+          - config-service
+          - discovery-service
+          - gateway-service
+          - map-service
+          - pet-service
+
+    defaults:
+      run:
+        working-directory: stray_real/${{ matrix.service }}
+
     steps:
-      # 1️⃣ 소스 코드 체크아웃
+      #  소스 코드 체크아웃
       - name: Checkout source
         uses: actions/checkout@v4
 
-      # 2️⃣ Java 빌드 (Spring Boot)
+      #  Java 빌드 (Spring Boot)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -28,20 +41,20 @@ jobs:
       - name: Build Spring Boot (skip test)
         run: ./gradlew clean build -x test
 
-      # 3️⃣ GHCR 로그인
+      #  GHCR 로그인
       - name: Login to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      # 4️⃣ Docker 이미지 빌드
+      #  Docker 이미지 빌드
       - name: Build Docker Image
         run: |
           docker build \
-            -t ghcr.io/${{ github.actor }}/pet-service:latest \
-            -t ghcr.io/${{ github.actor }}/pet-service:${{ github.sha }} \
+            -t ghcr.io/${{ github.actor }}/${{ matrix.service }}:latest \
+            -t ghcr.io/${{ github.actor }}/${{ matrix.service }}:${{ github.sha }} \
             .
 
-      # 5️⃣ Docker 이미지 푸시
+      #  Docker 이미지 푸시
       - name: Push Docker Image
         run: |
-          docker push ghcr.io/${{ github.actor }}/pet-service:latest
-          docker push ghcr.io/${{ github.actor }}/pet-service:${{ github.sha }}
+          docker push ghcr.io/${{ github.actor }}/${{ matrix.service }}:latest
+          docker push ghcr.io/${{ github.actor }}/${{ matrix.service }}:${{ github.sha }}
