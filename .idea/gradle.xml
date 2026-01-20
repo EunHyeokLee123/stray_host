@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/stray_real/config-service" />
+        <option name="gradleJvm" value="corretto-23" />
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/stray_real/discovery-service" />
+        <option name="gradleJvm" value="corretto-23" />
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/stray_real/gateway-service" />
+        <option name="gradleJvm" value="corretto-23" />
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/stray_real/map-service" />
+        <option name="gradleJvm" value="corretto-23" />
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/stray_real/pet-service" />
+        <option name="gradleJvm" value="corretto-23" />
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/stray_real/scheduler-service" />
+        <option name="gradleJvm" value="corretto-23" />
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

@@ -1,0 +1,145 @@
+# Docker Compose 파일 포맷의 버전을 지정합니다.
+version: '3.8'
+services:
+  config-service:
+    #build: ./config-service
+    image: 891612549514.dkr.ecr.ap-northeast-2.amazonaws.com/config-service:latest
+    container_name: config-service
+    networks:
+      - msa-network
+    ports:
+      - "8888:8888"
+    env_file:
+      - .env # .env 파일에서 환경변수를 load하겠다.
+    environment:
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+      GITHUB_URL: ${GITHUB_URL}
+      USERNAME: ${GITHUB_USERNAME}
+      TOKEN: ${GITHUB_TOKEN}
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8888/actuator/health" ]
+      interval: 15s # 15초마다 한번씩 체크
+      timeout: 5s # 5초 안에 완료되어야 한다.
+      retries: 3 # 3번까지 재시도 하기
+      start_period: 60s # 컨테이너 시작 후 60초 동안은 health check 실패를 무시.
+    restart: always # 컨테이너가 모종의 이유로 중지되면 무조건 재시작 시도.
+
+  discovery-service:
+    #build: ./discovery-service
+    image: 891612549514.dkr.ecr.ap-northeast-2.amazonaws.com/discovery-service:latest
+    container_name: discovery-service
+    networks:
+      - msa-network
+    ports:
+      - "8761:8761"
+    environment:
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8761" ]
+      interval: 15s # 15초마다 한번씩 체크
+      timeout: 5s # 5초 안에 완료되어야 한다.
+      retries: 3 # 3번까지 재시도 하기
+      start_period: 60s # 컨테이너 시작 후 60초 동안은 health check 실패를 무시.
+    restart: always # 컨테이너가 모종의 이유로 중지되면 무조건 재시작 시도.
+
+  gateway-service:
+    #build: ./gateway-service
+    image: 891612549514.dkr.ecr.ap-northeast-2.amazonaws.com/gateway-service:latest
+    container_name: gateway-service
+    networks:
+      - msa-network
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+    depends_on:
+      # gateway는 discovery와 config가 건강해야지만 컨테이너가 시작됩니다.
+      discovery-service:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+      mysql:
+        condition: service_started
+      redis:
+        condition: service_started
+    restart: always
+
+  map-service:
+    #build: ./user-service
+    image: 891612549514.dkr.ecr.ap-northeast-2.amazonaws.com/map-service:latest
+    container_name: map-service
+    networks:
+      - msa-network
+    env_file:
+      - .env
+    environment:
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+    depends_on:
+      # gateway는 discovery와 config가 건강해야지만 컨테이너가 시작됩니다.
+      discovery-service:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+      mysql:
+        condition: service_started
+      redis:
+        condition: service_started
+    restart: always
+
+  pet-service:
+    #build: ./user-service
+    image: 891612549514.dkr.ecr.ap-northeast-2.amazonaws.com/pet-service:latest
+    container_name: pet-service
+    networks:
+      - msa-network
+    env_file:
+      - .env
+    environment:
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+    depends_on:
+      # gateway는 discovery와 config가 건강해야지만 컨테이너가 시작됩니다.
+      discovery-service:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+    restart: always
+
+  redis:
+    image: redis:7.2
+    container_name: redis
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    networks:
+      - msa-network
+    restart: always
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    networks:
+      - msa-network
+    ports:
+      - "3306:3306"
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db-data:/var/lib/mysql
+    restart: always
+
+# 서비스들이 연결될 Docker 네트워크를 정의할 수 있습니다.
+# 동일한 호스트 내에서 서로 통신할 수 있도록 해 주는 Docker의 네트워크 드라이버.
+networks:
+  msa-network:
+    driver: bridge
+
+volumes:
+  db-data: # mysql 컨테이너가 사용하는 db-data 볼륨을 docker-compose도 기억해 줌.
