@@ -52,12 +52,12 @@ jobs:
       - name: Build Docker Image
         run: |
           docker build \
-            -t ghcr.io/${{ github.actor }}/${{ matrix.service }}:latest \
-            -t ghcr.io/${{ github.actor }}/${{ matrix.service }}:${{ github.sha }} \
+            -t ghcr.io/eunhyeok/${{ matrix.service }}:latest \
+            -t ghcr.io/eunhyeok/${{ matrix.service }}:${{ github.sha }} \
             .
 
       #  Docker 이미지 푸시
       - name: Push Docker Image
         run: |
-          docker push ghcr.io/${{ github.actor }}/${{ matrix.service }}:latest
-          docker push ghcr.io/${{ github.actor }}/${{ matrix.service }}:${{ github.sha }}
+          docker push ghcr.io/eunhyeok/${{ matrix.service }}:latest
+          docker push ghcr.io/eunhyeok/${{ matrix.service }}:${{ github.sha }}
