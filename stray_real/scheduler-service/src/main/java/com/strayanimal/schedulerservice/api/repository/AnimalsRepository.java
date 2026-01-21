@@ -2,6 +2,8 @@ package com.strayanimal.schedulerservice.api.repository;
 
 import com.strayanimal.schedulerservice.api.entity.StrayAnimalEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
@@ -17,4 +19,9 @@ public interface AnimalsRepository extends JpaRepository<StrayAnimalEntity, Stri
      * @return Optional<AnimalsEntity> - 존재하면 동물 엔티티 반환
      */
     Optional<StrayAnimalEntity> findByDesertionNo(String desertionNo);
+
+    @Modifying
+    @Query(value = "TRUNCATE TABLE stray_animal", nativeQuery = true)
+    void truncateTable();
+
 }
