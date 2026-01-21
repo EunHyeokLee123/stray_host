@@ -24,7 +24,3 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
-
-imagePath:
-  url: C:\stray_image

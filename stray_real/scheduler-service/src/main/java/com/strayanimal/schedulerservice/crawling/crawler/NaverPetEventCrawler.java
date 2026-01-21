@@ -1,6 +1,11 @@
 package com.strayanimal.schedulerservice.crawling.crawler;
 
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import com.strayanimal.schedulerservice.crawling.entity.FestivalEntity;
+import com.strayanimal.schedulerservice.crawling.helper.gcsSetting;
 import com.strayanimal.schedulerservice.crawling.repository.PetRepository;
 import lombok.RequiredArgsConstructor;
 import org.openqa.selenium.*;
@@ -13,7 +18,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.DigestUtils;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,10 +29,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,9 +57,21 @@ public class NaverPetEventCrawler {
     // 날짜 파싱 포맷터: "yyyy.MM.dd"
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd");
 
+    // gcs 세팅 받아오는 객체
+    //private final gcsSetting settings;
+
     // 이미지 저장 경로 (application.properties에서 주입)
     @Value("${imagePath.url}")
     private String saveDir;
+
+    @Value("${gcs.bucket}")
+    private String bucket;
+
+    @Value("${gcs.baseUrl}")
+    private String baseUrl;
+
+    @Value("${host.hosted}")
+    private boolean hosted;
 
     // 크롤링 시작 네이버 검색 URL (인코딩된 '펫 박람회' 검색어)
     private static final String BASE_URL = "https://search.naver.com/search.naver?query=%ED%8E%AB+%EB%B0%95%EB%9E%8C%ED%9A%8C";
@@ -338,25 +354,13 @@ public class NaverPetEventCrawler {
      */
     private String downloadImage(String imageUrl) {
         try {
-            // 이미지 파일명 추출 (마지막 '/' 이후)
-            String filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
+            imageUrl = resolveRealImageUrl(imageUrl);
 
-            // 저장할 디렉터리 및 전체 경로 생성
-            Path dirPath = Paths.get(saveDir);
-            Path targetPath = dirPath.resolve(filename);
-
-            // 저장 디렉터리가 없으면 생성
-            if (!Files.exists(dirPath)) {
-                Files.createDirectories(dirPath);
+            if (hosted) {
+                return uploadImageToGcs(imageUrl);
+            } else {
+                return downloadImageToLocal(imageUrl);
             }
-
-            // URL 연결 스트림 열어 로컬 파일로 복사 (덮어쓰기)
-            try (InputStream in = new URL(imageUrl).openStream()) {
-                Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
-            }
-
-            // 저장 경로 반환
-            return targetPath.toString();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -411,4 +415,84 @@ public class NaverPetEventCrawler {
             return "";
         }
     }
+
+    private String resolveRealImageUrl(String imageUrl) {
+        try {
+            // 네이버 이미지 프록시 URL인 경우
+            if (imageUrl.contains("search.pstatic.net/common") && imageUrl.contains("src=")) {
+                URI uri = new URI(imageUrl);
+                String query = uri.getQuery(); // type=...&src=...
+
+                for (String param : query.split("&")) {
+                    if (param.startsWith("src=")) {
+                        return URLDecoder.decode(
+                                param.substring(4),
+                                StandardCharsets.UTF_8
+                        );
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 프록시가 아니면 그대로 반환
+        return imageUrl;
+    }
+
+    private String downloadImageToLocal(String imageUrl) {
+        try {
+            String filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
+
+            Path dirPath = Paths.get(saveDir);
+            Path targetPath = dirPath.resolve(filename);
+
+            if (!Files.exists(dirPath)) {
+                Files.createDirectories(dirPath);
+            }
+
+            try (InputStream in = new URL(imageUrl).openStream()) {
+                Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            return targetPath.toString();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    private String uploadImageToGcs(String imageUrl) {
+        try {
+            // 파일 확장자 추출
+            String extension = imageUrl.contains(".")
+                    ? imageUrl.substring(imageUrl.lastIndexOf('.'))
+                    : ".jpg";
+
+            // GCS에 저장될 파일명 (중복 방지)
+            String objectName = "festivals/" + UUID.randomUUID() + extension;
+
+            Storage storage = StorageOptions.getDefaultInstance().getService();
+
+            BlobId blobId = BlobId.of(bucket, objectName);
+            BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                    .setContentType("image/jpeg")
+                    .build();
+
+            try (InputStream in = new URL(imageUrl).openStream()) {
+                storage.create(blobInfo, in);
+            }
+
+            // public URL 반환
+            return baseUrl + "/" + bucket + "/" + objectName;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
 }
