@@ -6,7 +6,8 @@ spring:
     name: scheduler-service   # ⭐ Config Server에서 찾을 이름
 
   profiles:
-    active: default          # ⭐ 가져올 profile
+    # 로컬은 default, 호스팅은 dev
+    active: dev
 
   config:
     import: optional:configserver:http://localhost:8888
