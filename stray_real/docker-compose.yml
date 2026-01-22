@@ -143,6 +143,18 @@ services:
       - db-data:/var/lib/mysql
     restart: always
 
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    networks:
+      - msa-network
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - gateway-service
+
 # 서비스들이 연결될 Docker 네트워크를 정의할 수 있습니다.
 # 동일한 호스트 내에서 서로 통신할 수 있도록 해 주는 Docker의 네트워크 드라이버.
 networks:
