@@ -48,6 +48,9 @@ public class AnimalSyncJobConfig {
     // DB에 데이터를 저장/업데이트하는 ItemWriter
     private final AnimalCustomItemWriter writer;
 
+    // Step 종료 후 불필요한 데이터를 삭제하는 Listener
+    private final AnimalStepListener listener;
+
     /**
      * Step 정의 - 'animalApiToDbStep'
      * - 기능: API에서 데이터를 읽고, 가공하고, DB에 저장
@@ -64,6 +67,7 @@ public class AnimalSyncJobConfig {
                 .processor(processor)
                 // Writer: DB에 저장 또는 업데이트
                 .writer(writer)
+                .listener(listener)
                 .build();
     }
 
