@@ -43,38 +43,31 @@ public class CsvBatchConfig {
                 .resource(new FileSystemResource("C:\\nyangmong_image\\hospital\\animal_hospital.csv"))
                 .delimited() // 쉼표로 구분된 csv 파일입니다.
                 .names(
-                        "id",                        // 번호
-                        "serviceName",               // 개방서비스명
-                        "serviceId",                 // 개방서비스아이디
-                        "regionCode",                // 개방자치단체코드
-                        "managementNumber",          // 관리번호
-                        "approvalDate",              // 인허가일자
-                        "permitCancelDate",          // 인허가취소일자
-                        "businessStatusCode",        // 영업상태구분코드
-                        "businessStatusName",        // 영업상태명
-                        "detailedBusinessStatusCode",// 상세영업상태코드
-                        "detailedBusinessStatusName",// 상세영업상태명
-                        "closureDate",               // 폐업일자
-                        "temporaryClosureStartDate", // 휴업시작일자
-                        "temporaryClosureEndDate",   // 휴업종료일자
-                        "reopeningDate",             // 재개업일자
-                        "phoneNumber",               // 소재지전화
-                        "siteArea",                  // 소재지면적
-                        "postalCode",                // 소재지우편번호
-                        "fullAddress",               // 소재지전체주소
-                        "roadAddress",               // 도로명전체주소
-                        "roadPostalCode",            // 도로명우편번호
-                        "businessName",              // 사업장명
-                        "lastModified",              // 최종수정시점
-                        "dataUpdateType",            // 데이터갱신구분
-                        "dataUpdateDate",            // 데이터갱신일자
-                        "businessType",              // 업태구분명
-                        "coordinateX",               // 좌표정보 x (EPSG:5174)
-                        "coordinateY",               // 좌표정보 y (EPSG:5174)
-                        "taskType",                  // 업무구분명
-                        "detailedTaskType",          // 상세업무구분명
-                        "rightsHolderNumber",        // 권리주체일련번호
-                        "totalEmployees"             // 총직원수
+                        "id",
+                        "regionCode",
+                        "managementNumber",
+                        "approvalDate",
+                        "permitCancelDate",
+                        "businessStatusName",
+                        "closureDate",
+                        "temporaryClosureStartDate",
+                        "temporaryClosureEndDate",
+                        "reopeningDate",
+                        "siteArea",
+                        "postalCode",
+                        "roadPostalCode",
+                        "businessName",
+                        "dataUpdateType",
+                        "rightsHolderNumber",
+                        "dataUpdateDate",
+                        "roadAddress",
+                        "detailedBusinessStatusName",
+                        "detailedBusinessStatusCode",
+                        "phoneNumber",
+                        "coordinateX",
+                        "coordinateY",
+                        "fullAddress",
+                        "lastModified"
                 )
                 .encoding("UTF-8")
                 .fieldSetMapper(new AnimalHospitalFieldSetMapper())
@@ -89,60 +82,60 @@ public class CsvBatchConfig {
                 .itemSqlParameterSourceProvider(BeanPropertySqlParameterSource::new)
                 .sql("""
                         INSERT INTO animal_hospital (
-                            id, service_name, service_id, region_code,
-                            management_number, approval_date, permit_cancel_date,
-                            business_status_code, business_status_name, detailed_business_status_code,
-                            detailed_business_status_name, closure_date, temporary_closure_start_date,
-                            temporary_closure_end_date, reopening_date, phone_number,
-                            site_area, postal_code, full_address, road_address,
-                            road_postal_code, business_name, last_modified,
-                            data_update_type, data_update_date, business_type,
-                            coordinate_x, coordinate_y, task_type,
-                            detailed_task_type, rights_holder_number, total_employees
+                            id, region_code, management_number, approval_date, permit_cancel_date,
+                            business_status_name, closure_date, temporary_closure_start_date,
+                            temporary_closure_end_date, reopening_date, site_area, postal_code, road_postal_code,
+                            business_name, data_update_type, rights_holder_number, data_update_date, road_address,
+                            detailed_business_status_name, detailed_business_status_code, phone_number,
+                            coordinate_x, coordinate_y, full_address, last_modified
                         ) VALUES (
-                            :id, :serviceName, :serviceId, :regionCode,
-                            :managementNumber, :approvalDate, :permitCancelDate,
-                            :businessStatusCode, :businessStatusName, :detailedBusinessStatusCode,
-                            :detailedBusinessStatusName, :closureDate, :temporaryClosureStartDate,
-                            :temporaryClosureEndDate, :reopeningDate, :phoneNumber,
-                            :siteArea, :postalCode, :fullAddress, :roadAddress,
-                            :roadPostalCode, :businessName, :lastModified,
-                            :dataUpdateType, :dataUpdateDate, :businessType,
-                            :coordinateX, :coordinateY, :taskType,
-                            :detailedTaskType, :rightsHolderNumber, :totalEmployees
+                            :id, :regionCode, :managementNumber, :approvalDate, :permitCancelDate,
+                            :businessStatusName, :closureDate, :temporaryClosureStartDate,
+                            :temporaryClosureEndDate, :reopeningDate, :siteArea, :postalCode, :roadPostalCode,
+                            :businessName, :dataUpdateType, :rightsHolderNumber, :dataUpdateDate, :roadAddress,
+                            :detailedBusinessStatusName, :detailedBusinessStatusCode, :phoneNumber,
+                            :coordinateX, :coordinateY, :fullAddress, :lastModified
                         )
+                        
                         ON DUPLICATE KEY UPDATE
-                            service_name = VALUES(service_name),
-                            service_id = VALUES(service_id),
+                        
                             region_code = VALUES(region_code),
                             management_number = VALUES(management_number),
                             approval_date = VALUES(approval_date),
                             permit_cancel_date = VALUES(permit_cancel_date),
-                            business_status_code = VALUES(business_status_code),
+                        
                             business_status_name = VALUES(business_status_name),
-                            detailed_business_status_code = VALUES(detailed_business_status_code),
-                            detailed_business_status_name = VALUES(detailed_business_status_name),
                             closure_date = VALUES(closure_date),
+                        
                             temporary_closure_start_date = VALUES(temporary_closure_start_date),
                             temporary_closure_end_date = VALUES(temporary_closure_end_date),
                             reopening_date = VALUES(reopening_date),
-                            phone_number = VALUES(phone_number),
+                        
                             site_area = VALUES(site_area),
                             postal_code = VALUES(postal_code),
-                            full_address = VALUES(full_address),
-                            road_address = VALUES(road_address),
                             road_postal_code = VALUES(road_postal_code),
+                        
                             business_name = VALUES(business_name),
-                            last_modified = VALUES(last_modified),
+                        
                             data_update_type = VALUES(data_update_type),
                             data_update_date = VALUES(data_update_date),
-                            business_type = VALUES(business_type),
+                        
+                            rightsHolderNumber = VALUES(rightsHolderNumber),
+                        
+                            roadAddress = VALUES(roadAddress),
+                        
+                            detailedBusinessStatusName = VALUES(detailedBusinessStatusName),
+                            detailedBusinessStatusCode = VALUES(detailedBusinessStatusCode),
+                        
+                            phoneNumber = VALUES(phoneNumber),
+                        
                             coordinate_x = VALUES(coordinate_x),
                             coordinate_y = VALUES(coordinate_y),
-                            task_type = VALUES(task_type),
-                            detailed_task_type = VALUES(detailed_task_type),
-                            rights_holder_number = VALUES(rights_holder_number),
-                            total_employees = VALUES(total_employees)
+                        
+                            fullAddress = VALUES(fullAddress),
+                        
+                            lastModified = VALUES(lastModified);
+                        
                         """)
                 .dataSource(dataSource) // 데이터베이스 정보 전달
                 .build();

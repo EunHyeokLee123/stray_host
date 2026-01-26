@@ -35,8 +35,6 @@ public class AnimalHospitalFieldSetMapper implements FieldSetMapper<AnimalHospit
 
         // 필드 번호(index)에 맞게 각 컬럼을 읽어와 세팅합니다.
         hospital.setId(Long.valueOf(fieldSet.readString(0)));                                // 행 번호
-        hospital.setServiceName(fieldSet.readString(1));                                     // 개방서비스명
-        hospital.setServiceId(fieldSet.readString(2));                                       // 개방서비스ID
         hospital.setRegionCode(fieldSet.readString(3));                                      // 자치단체 코드
         hospital.setManagementNumber(fieldSet.readString(4));                                // 관리번호
 
@@ -44,7 +42,6 @@ public class AnimalHospitalFieldSetMapper implements FieldSetMapper<AnimalHospit
         hospital.setApprovalDate(parseLocalDate(fieldSet.readString(5)));                    // 인허가일자
         hospital.setPermitCancelDate(parseLocalDate(fieldSet.readString(6)));                // 인허가취소일자
 
-        hospital.setBusinessStatusCode(fieldSet.readString(7));                              // 영업상태구분코드
         hospital.setBusinessStatusName(fieldSet.readString(8));                              // 영업상태명
         hospital.setDetailedBusinessStatusCode(fieldSet.readString(9));                      // 상세영업상태코드
         hospital.setDetailedBusinessStatusName(fieldSet.readString(10));                     // 상세영업상태명
@@ -64,16 +61,12 @@ public class AnimalHospitalFieldSetMapper implements FieldSetMapper<AnimalHospit
 
         hospital.setLastModified(parseLocalDateTime(fieldSet.readString(22)));               // 최종수정일자 (초 생략 가능)
         hospital.setDataUpdateType(fieldSet.readString(23));                                 // 데이터 갱신 구분
-        hospital.setDataUpdateDate(parseLocalDate(fieldSet.readString(24)));                 // 데이터 갱신 일자
-        hospital.setBusinessType(fieldSet.readString(25));                                   // 업태구분명
+        hospital.setDataUpdateDate(parseLocalDateTime(fieldSet.readString(24)));             // 데이터 갱신 일자
 
         hospital.setCoordinateX(parseDouble(fieldSet.readString(26)));                       // 좌표 X (경도)
         hospital.setCoordinateY(parseDouble(fieldSet.readString(27)));                       // 좌표 Y (위도)
 
-        hospital.setTaskType(fieldSet.readString(28));                                       // 업무 구분
-        hospital.setDetailedTaskType(fieldSet.readString(29));                               // 상세 업무 구분
         hospital.setRightsHolderNumber(fieldSet.readString(30));                             // 권리주체번호
-        hospital.setTotalEmployees(parseInteger(fieldSet.readString(31)));                   // 총 종사자 수
 
         return hospital;
     }

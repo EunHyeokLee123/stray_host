@@ -12,11 +12,8 @@ import java.time.LocalDateTime;
 public class HospitalDetailResDto {
 
     private Long id;  // 번호
-    private String serviceName; // 개방서비스명
-    private String serviceId; // 개방서비스아이디
     private LocalDate approvalDate; // 인허가일자
     private String phoneNumber; // 소재지전화
-    private Double siteArea; // 소재지면적
     private String postalCode; // 소재지우편번호
     private String fullAddress; // 소재지전체주소
     private String roadAddress; // 도로명전체주소
