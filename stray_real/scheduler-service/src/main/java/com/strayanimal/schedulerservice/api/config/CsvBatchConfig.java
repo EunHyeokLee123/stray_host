@@ -104,27 +104,39 @@ public class CsvBatchConfig {
                             management_number = VALUES(management_number),
                             approval_date = VALUES(approval_date),
                             permit_cancel_date = VALUES(permit_cancel_date),
+                        
                             business_status_name = VALUES(business_status_name),
                             closure_date = VALUES(closure_date),
+                        
                             temporary_closure_start_date = VALUES(temporary_closure_start_date),
                             temporary_closure_end_date = VALUES(temporary_closure_end_date),
                             reopening_date = VALUES(reopening_date),
+                        
                             site_area = VALUES(site_area),
                             postal_code = VALUES(postal_code),
                             road_postal_code = VALUES(road_postal_code),
+                        
                             business_name = VALUES(business_name),
+                        
                             data_update_type = VALUES(data_update_type),
                             data_update_date = VALUES(data_update_date),
-                            rightsHolderNumber = VALUES(rightsHolderNumber),
-                            roadAddress = VALUES(roadAddress),
-                            detailedBusinessStatusName = VALUES(detailedBusinessStatusName),
-                            detailedBusinessStatusCode = VALUES(detailedBusinessStatusCode),
-                            businessStatusCode = VALUES(businessStatusCode),
-                            phoneNumber = VALUES(phoneNumber),
+                        
+                            rights_holder_number = VALUES(rights_holder_number),
+                            road_address = VALUES(road_address),
+                        
+                            detailed_business_status_name = VALUES(detailed_business_status_name),
+                            detailed_business_status_code = VALUES(detailed_business_status_code),
+                        
+                            business_status_code = VALUES(business_status_code),
+                        
+                            phone_number = VALUES(phone_number),
+                        
                             coordinate_x = VALUES(coordinate_x),
                             coordinate_y = VALUES(coordinate_y),
-                            fullAddress = VALUES(fullAddress),
-                            lastModified = VALUES(lastModified);
+                        
+                            full_address = VALUES(full_address),
+                        
+                            last_modified = VALUES(last_modified);
                         
                         """)
                 .dataSource(dataSource) // 데이터베이스 정보 전달
