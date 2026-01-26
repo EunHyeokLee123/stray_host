@@ -63,6 +63,7 @@ public class CsvBatchConfig {
                         "roadAddress",
                         "detailedBusinessStatusName",
                         "detailedBusinessStatusCode",
+                        "businessStatusCode",
                         "phoneNumber",
                         "coordinateX",
                         "coordinateY",
@@ -86,15 +87,15 @@ public class CsvBatchConfig {
                             business_status_name, closure_date, temporary_closure_start_date,
                             temporary_closure_end_date, reopening_date, site_area, postal_code, road_postal_code,
                             business_name, data_update_type, rights_holder_number, data_update_date, road_address,
-                            detailed_business_status_name, detailed_business_status_code, phone_number,
-                            coordinate_x, coordinate_y, full_address, last_modified
+                            detailed_business_status_name, detailed_business_status_code, business_status_code,
+                            phone_number, coordinate_x, coordinate_y, full_address, last_modified
                         ) VALUES (
                             :id, :regionCode, :managementNumber, :approvalDate, :permitCancelDate,
                             :businessStatusName, :closureDate, :temporaryClosureStartDate,
                             :temporaryClosureEndDate, :reopeningDate, :siteArea, :postalCode, :roadPostalCode,
                             :businessName, :dataUpdateType, :rightsHolderNumber, :dataUpdateDate, :roadAddress,
-                            :detailedBusinessStatusName, :detailedBusinessStatusCode, :phoneNumber,
-                            :coordinateX, :coordinateY, :fullAddress, :lastModified
+                            :detailedBusinessStatusName, :detailedBusinessStatusCode, :businessStatusCode,
+                            :phoneNumber, :coordinateX, :coordinateY, :fullAddress, :lastModified
                         )
                         
                         ON DUPLICATE KEY UPDATE
@@ -103,37 +104,26 @@ public class CsvBatchConfig {
                             management_number = VALUES(management_number),
                             approval_date = VALUES(approval_date),
                             permit_cancel_date = VALUES(permit_cancel_date),
-                        
                             business_status_name = VALUES(business_status_name),
                             closure_date = VALUES(closure_date),
-                        
                             temporary_closure_start_date = VALUES(temporary_closure_start_date),
                             temporary_closure_end_date = VALUES(temporary_closure_end_date),
                             reopening_date = VALUES(reopening_date),
-                        
                             site_area = VALUES(site_area),
                             postal_code = VALUES(postal_code),
                             road_postal_code = VALUES(road_postal_code),
-                        
                             business_name = VALUES(business_name),
-                        
                             data_update_type = VALUES(data_update_type),
                             data_update_date = VALUES(data_update_date),
-                        
                             rightsHolderNumber = VALUES(rightsHolderNumber),
-                        
                             roadAddress = VALUES(roadAddress),
-                        
                             detailedBusinessStatusName = VALUES(detailedBusinessStatusName),
                             detailedBusinessStatusCode = VALUES(detailedBusinessStatusCode),
-                        
+                            businessStatusCode = VALUES(businessStatusCode),
                             phoneNumber = VALUES(phoneNumber),
-                        
                             coordinate_x = VALUES(coordinate_x),
                             coordinate_y = VALUES(coordinate_y),
-                        
                             fullAddress = VALUES(fullAddress),
-                        
                             lastModified = VALUES(lastModified);
                         
                         """)

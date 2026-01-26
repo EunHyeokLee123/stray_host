@@ -83,6 +83,9 @@ public class AnimalHospital {
     @Column(name = "detailed_business_status_code")
     private String detailedBusinessStatusCode; // 상세영업상태코드
 
+    @Column(name = "business_status_code")
+    private String businessStatusCode;
+
     @Column(name = "phone_number")
     private String phoneNumber; // 소재지전화
 
