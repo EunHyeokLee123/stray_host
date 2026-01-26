@@ -45,7 +45,7 @@ public class TokenSecurityService {
 
     private void blockFingerprint(String fingerprint) {
         redisTemplate.opsForValue()
-                .set("token:block:fp:" + fingerprint, "1", Duration.ofMinutes(30));
+                .set("token:block:fp:" + fingerprint, "1", Duration.ofMinutes(5));
     }
 
 }
