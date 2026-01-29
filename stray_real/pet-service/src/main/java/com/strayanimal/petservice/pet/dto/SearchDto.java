@@ -1,6 +1,7 @@
 package com.strayanimal.petservice.pet.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,7 +28,7 @@ public class SearchDto {
 
     // 0은 pc, 1은 태블릿, 2는 모바일
     // 0 -> 9개, 1 - 8개, 2 - 6개
-    @NotBlank(message = "디바이스 정보는 필수입니다.")
+    @NotNull
     private int device;
 
 }
