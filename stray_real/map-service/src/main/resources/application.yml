@@ -6,8 +6,9 @@ spring:
     name: map-service   # ? Config Server?? ?? ??
 
   profiles:
+    #active: default
     active: host             # ? ??? profile
 
   config:
     import: optional:configserver:http://config-service:8888
-    # import: optional:configserver:http://localhost:8888
+    #import: optional:configserver:http://localhost:8888

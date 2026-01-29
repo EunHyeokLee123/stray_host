@@ -28,9 +28,11 @@ public class PetService {
 
     public CommonResDto search(SearchDto searchDto, int page) {
 
+        int count = getItemCount(searchDto.getDevice());
+
         Pageable pageable = PageRequest.of(
                 page,      // 0부터 시작
-                9          // 페이지당 아이템 수
+                count          // 페이지당 아이템 수
         );
 
         Page<StrayAnimalEntity> result;
@@ -65,6 +67,21 @@ public class PetService {
         }
         else {
             throw new CommonException(ErrorCode.INVALID_PARAMETER, "없는 번호입니다.");
+        }
+    }
+
+    private int getItemCount(int device) {
+        if(device == 0) {
+            return 9;
+        }
+        else if(device == 1) {
+            return 8;
+        }
+        else if(device == 2) {
+            return 6;
+        }
+        else {
+            throw new CommonException(ErrorCode.INVALID_PARAMETER, "옳지 않은 기기정보입니다.");
         }
     }
 

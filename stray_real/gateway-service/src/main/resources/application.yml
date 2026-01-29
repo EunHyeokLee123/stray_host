@@ -10,10 +10,12 @@ spring:
 
   profiles:
     active: host          # ⭐ 가져올 profile
+    #active: default
+
 
   config:
     import: optional:configserver:http://config-service:8888
-    # import: optional:configserver:http://localhost:8888
+    #import: optional:configserver:http://localhost:8888
 
   cloud:
     gateway:

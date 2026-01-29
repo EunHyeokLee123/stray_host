@@ -25,4 +25,9 @@ public class SearchDto {
     )
     private String kind;
 
+    // 0은 pc, 1은 태블릿, 2는 모바일
+    // 0 -> 9개, 1 - 8개, 2 - 6개
+    @NotBlank(message = "디바이스 정보는 필수입니다.")
+    private int device;
+
 }
