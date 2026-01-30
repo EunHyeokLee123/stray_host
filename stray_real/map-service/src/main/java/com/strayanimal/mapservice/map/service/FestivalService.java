@@ -16,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -35,7 +36,7 @@ public class FestivalService {
                 Sort.by("startDate").ascending()
         );
 
-        Page<FestivalEntity> mid = festivalRepository.findValidList(pageable);
+        Page<FestivalEntity> mid = festivalRepository.findValidList(pageable, LocalDate.now());
         Page<FestivalListResDto> result = mid.map(FestivalListResDto::new);
 
         return new CommonResDto(HttpStatus.OK, "Found valid festival", result);
