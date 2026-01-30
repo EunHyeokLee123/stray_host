@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +31,8 @@ public class FestivalService {
 
         Pageable pageable = PageRequest.of(
                 page,      // 0부터 시작
-                SIZE          // 페이지당 아이템 수
+                SIZE,          // 페이지당 아이템 수
+                Sort.by("startDate").ascending()
         );
 
         Page<FestivalEntity> mid = festivalRepository.findValidList(pageable);

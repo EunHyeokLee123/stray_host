@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface FestivalRepository extends JpaRepository<FestivalEntity, String> {
 
     // addr이 없는 값은 뽑지 않음.
-    @Query("SELECT f FROM FestivalEntity f WHERE f.addr is not null")
+    @Query("SELECT f FROM FestivalEntity f WHERE f.addr is not null AND f.startDate is not null")
     Page<FestivalEntity> findValidList(Pageable pageable);
 
     @Query("SELECT f FROM FestivalEntity f WHERE f.festivalId = :id")
