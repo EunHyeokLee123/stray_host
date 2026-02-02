@@ -8,6 +8,8 @@ import com.strayanimal.schedulerservice.crawling.entity.FestivalEntity;
 import com.strayanimal.schedulerservice.crawling.helper.gcsSetting;
 import com.strayanimal.schedulerservice.crawling.repository.PetRepository;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.openqa.selenium.*;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -17,10 +19,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.DigestUtils;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLDecoder;
+import java.io.InputStreamReader;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,6 +34,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * 네이버 검색 결과에서 "펫 박람회" 관련 행사를 크롤링하는 컴포넌트 클래스입니다.
@@ -72,6 +75,9 @@ public class NaverPetEventCrawler {
 
     @Value("${host.hosted}")
     private boolean hosted;
+
+    @Value("${kakao.appKey}")
+    private String kakaoAppKey;
 
     // 크롤링 시작 네이버 검색 URL (인코딩된 '펫 박람회' 검색어)
     private static final String BASE_URL = "https://search.naver.com/search.naver?query=%ED%8E%AB+%EB%B0%95%EB%9E%8C%ED%9A%8C";
@@ -256,47 +262,142 @@ public class NaverPetEventCrawler {
             }
         }
 
+        /*
         // 지도 버튼 클릭 → iframe 내부에서 실제 주소 추출
         try {
-            // .cm_info_box 내 .button_area 안의 .place 클래스를 가진 모든 요소(지도 버튼)를 찾음
-            List<WebElement> mapButtons = driver.findElements(By.cssSelector(".cm_info_box .button_area .place"));
+            List<WebElement> mapButtons =
+                    driver.findElements(By.cssSelector(".cm_info_box .button_area .place"));
 
-            // 버튼이 존재하는 경우에만 처리
             if (!mapButtons.isEmpty()) {
-                // 첫 번째 지도 버튼 요소를 선택
-                WebElement mapButton = mapButtons.get(0);
 
-                // 버튼의 href 속성(네이버 지도 URL)을 가져옴
+                WebElement mapButton = mapButtons.get(0);
                 String mapHref = mapButton.getAttribute("href");
 
-                // href가 존재하고 네이버 지도 URL일 경우에만 이동
                 if (mapHref != null && mapHref.startsWith("https://map.naver.com")) {
-                    // 해당 지도 페이지로 이동
+
                     driver.get(mapHref);
 
-                    // 최대 10초 대기 설정
-                    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+                    WebDriverWait wait =
+                            new WebDriverWait(driver, Duration.ofSeconds(25));
 
-                    // id가 entryIframe인 iframe이 로드되고 접근 가능해질 때까지 대기 후 iframe으로 전환
-                    wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("entryIframe")));
+                    // iframe 로딩 대기
+                    wait.until(ExpectedConditions.presenceOfElementLocated(
+                            By.tagName("iframe")
+                    ));
 
-                    // iframe 내부에서 주소가 담긴 요소가 DOM에 나타날 때까지 대기
-                    WebElement addressEl = wait.until(
-                            ExpectedConditions.presenceOfElementLocated(
-                                    By.cssSelector(".place_section_content .LDgIH")  // 주소 요소 CSS 셀렉터
-                            )
-                    );
+                    boolean found = false;
 
-                    // 주소 텍스트를 추출하여 변수에 저장
-                    addr = addressEl.getText();
+                    // 모든 iframe 탐색
+                    List<WebElement> iframes =
+                            driver.findElements(By.tagName("iframe"));
 
-                    // iframe에서 빠져나와 기본 컨텐츠로 전환
+                    System.out.println("iframe 개수: " + iframes.size());
+
+                    System.out.println(driver.getPageSource());
+
+                    for (WebElement frame : iframes) {
+
+                        try {
+                            driver.switchTo().frame(frame);
+
+                            // 주소 나올 때까지 최대 15초 대기
+                            WebDriverWait frameWait =
+                                    new WebDriverWait(driver, Duration.ofSeconds(15));
+
+                            frameWait.until(ExpectedConditions.presenceOfElementLocated(
+                                    By.xpath("//*[contains(.,'시') or contains(.,'군') or contains(.,'구')]")
+                            ));
+
+                            // 지역 목록
+                            String[] regions = {
+                                    "서울","인천","대전","대구","광주","부산","울산","세종",
+                                    "경기","강원","충북","충남","전북","전남","경북","경남","제주"
+                            };
+
+                            List<WebElement> candidates =
+                                    driver.findElements(
+                                            By.xpath("//*[contains(.,'시') or contains(.,'군') or contains(.,'구')]")
+                                    );
+
+                            for (WebElement el : candidates) {
+
+                                String text = el.getText().trim();
+
+                                // text 없으면 attribute에서 재시도
+                                if (text.isEmpty()) {
+                                    text = el.getAttribute("aria-label");
+
+                                    if (text == null || text.isEmpty()) {
+                                        text = el.getAttribute("data-address");
+                                    }
+
+                                    if (text == null) continue;
+
+                                    text = text.trim();
+                                }
+
+                                // 길이 필터
+                                if (text.length() < 8) continue;
+
+                                // 숫자 필수
+                                if (!text.matches(".*\\d+.*")) continue;
+
+                                // 지역 검사
+                                boolean match = false;
+
+                                for (String r : regions) {
+                                    if (text.startsWith(r)) {
+                                        match = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!match) continue;
+
+                                // 확정
+                                addr = text;
+
+                                System.out.println("주소 추출 성공: " + addr);
+
+                                found = true;
+                                break;
+                            }
+
+                            if (found) break;
+
+                        } catch (TimeoutException e) {
+                            // 이 iframe은 주소 없음
+                        } finally {
+                            driver.switchTo().defaultContent();
+                        }
+                    }
+
+
+                    if (!found) {
+                        System.out.println("주소 추출 실패: " + mapHref);
+                    }
+
                     driver.switchTo().defaultContent();
                 }
             }
+
         } catch (Exception e) {
             System.out.println("주소 추출 중 오류 발생: " + e.getMessage());
         }
+
+        */
+
+        // Kakao API로 주소 가져오기 (Selenium 대신)
+        if (addr.isEmpty() && !location.isEmpty()) {
+
+            String kakaoAddr = getAddressFromKakao(location);
+
+            if (kakaoAddr != null && !kakaoAddr.isEmpty()) {
+                addr = kakaoAddr;
+                System.out.println("Kakao 주소 사용: " + addr);
+            }
+        }
+
 
         // 중복 체크용 고유 해시 생성 (제목 + URL + 장소 기준)
         String hash = generateHash(eventTitle, eventUrl, location);
@@ -493,6 +594,52 @@ public class NaverPetEventCrawler {
             return null;
         }
     }
+
+    // 카카오맵으로 지도값 받아오기
+    public String getAddressFromKakao(String location) {
+
+        try {
+            String REST_API_KEY = kakaoAppKey;
+
+            String query = URLEncoder.encode(location, "UTF-8");
+
+            String apiUrl =
+                    "https://dapi.kakao.com/v2/local/search/keyword.json?query=" + query;
+
+            HttpURLConnection conn =
+                    (HttpURLConnection) new URL(apiUrl).openConnection();
+
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization",
+                    "KakaoAK " + REST_API_KEY);
+
+            BufferedReader br =
+                    new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+            String json =
+                    br.lines().collect(Collectors.joining());
+
+            // JSON 파싱
+            JSONObject obj = new JSONObject(json);
+
+            JSONArray docs = obj.getJSONArray("documents");
+
+            if (docs.length() == 0) return null;
+
+            JSONObject first = docs.getJSONObject(0);
+
+            // 도로명 주소 우선
+            String road = first.optString("road_address_name");
+            String addr = first.optString("address_name");
+
+            return road.isEmpty() ? addr : road;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
 
 }
