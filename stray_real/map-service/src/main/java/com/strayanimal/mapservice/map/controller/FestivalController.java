@@ -22,6 +22,7 @@ public class FestivalController {
 
     private final FestivalService festivalService;
 
+    // 전국용
     @GetMapping("/list/{page}")
     public ResponseEntity<?> getFestivalList(@PathVariable @Min(value = 0, message = "page는 0 이상이어야 합니다.") int page) {
         CommonResDto resDto = festivalService.getAllList(page);
@@ -32,6 +33,23 @@ public class FestivalController {
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getFestivalDetail(@PathVariable Long id) {
         CommonResDto resDto = festivalService.getDetail(id);
+
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/region")
+    public ResponseEntity<?> getRegionList() {
+        CommonResDto resDto = festivalService.getRegion();
+
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/region/list/{region}/{page}")
+    public ResponseEntity<?> getFestivalRegionList(@PathVariable(name = "region") String region,
+                                                   @PathVariable(name = "page") @Min(value = 0, message = "page는 0 이상이어야 합니다.")
+                                                   int page) {
+
+        CommonResDto resDto = festivalService.findByRegion(region, page);
 
         return new ResponseEntity<>(resDto, HttpStatus.OK);
     }
