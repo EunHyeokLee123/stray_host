@@ -10,28 +10,86 @@ permissions:
   packages: write
 
 jobs:
+
+  # 1️⃣ 변경된 서비스 감지
+  detect-changes:
+    runs-on: ubuntu-latest
+
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect changed services
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            config:
+              - 'stray_real/config-service/**'
+            discovery:
+              - 'stray_real/discovery-service/**'
+            gateway:
+              - 'stray_real/gateway-service/**'
+            map:
+              - 'stray_real/map-service/**'
+            pet:
+              - 'stray_real/pet-service/**'
+
+      - name: Set matrix
+        id: set-matrix
+        run: |
+          SERVICES=()
+
+          if [[ "${{ steps.filter.outputs.config }}" == "true" ]]; then
+            SERVICES+=("config-service")
+          fi
+
+          if [[ "${{ steps.filter.outputs.discovery }}" == "true" ]]; then
+            SERVICES+=("discovery-service")
+          fi
+
+          if [[ "${{ steps.filter.outputs.gateway }}" == "true" ]]; then
+            SERVICES+=("gateway-service")
+          fi
+
+          if [[ "${{ steps.filter.outputs.map }}" == "true" ]]; then
+            SERVICES+=("map-service")
+          fi
+
+          if [[ "${{ steps.filter.outputs.pet }}" == "true" ]]; then
+            SERVICES+=("pet-service")
+          fi
+
+          if [ ${#SERVICES[@]} -eq 0 ]; then
+            echo "matrix=[]" >> $GITHUB_OUTPUT
+          else
+            echo "matrix=$(printf '%s\n' "${SERVICES[@]}" | jq -R . | jq -s .)" >> $GITHUB_OUTPUT
+          fi
+
+
+  # 2️⃣ 변경된 서비스만 빌드
   build-and-push:
+    needs: detect-changes
+
+    if: ${{ needs.detect-changes.outputs.matrix != '[]' }}
+
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        service:
-          - config-service
-          - discovery-service
-          - gateway-service
-          - map-service
-          - pet-service
+        service: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
 
     defaults:
       run:
         working-directory: stray_real/${{ matrix.service }}
 
     steps:
-      #  소스 코드 체크아웃
       - name: Checkout source
         uses: actions/checkout@v4
 
-      #  Java 빌드 (Spring Boot)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -41,17 +99,15 @@ jobs:
       - name: Set lowercase owner
         run: echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
 
-      - name: Grant execute permission to gradlew
+      - name: Grant execute permission
         run: chmod +x gradlew
 
-      - name: Build Spring Boot (skip test)
+      - name: Build Spring Boot
         run: ./gradlew clean build -x test
 
-      #  GHCR 로그인
       - name: Login to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      #  Docker 이미지 빌드
       - name: Build Docker Image
         run: |
           docker build \
@@ -59,7 +115,6 @@ jobs:
             -t ghcr.io/${{ env.OWNER_LC }}/${{ matrix.service }}:${{ github.sha }} \
             .
 
-      #  Docker 이미지 푸시
       - name: Push Docker Image
         run: |
           docker push ghcr.io/${{ env.OWNER_LC }}/${{ matrix.service }}:latest
