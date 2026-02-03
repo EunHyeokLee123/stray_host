@@ -38,4 +38,8 @@ public interface AnimalsRepository extends JpaRepository<StrayAnimalEntity, Stri
 
     @Query("SELECT s FROM StrayAnimalEntity s WHERE s.upKindNm = :kind")
     Page<StrayAnimalEntity> searchAll(@Param("kind") String kind, Pageable pageable);
+
+    @Query("SELECT COUNT(s)  FROM StrayAnimalEntity s")
+    Integer countAllAnimal();
+
 }

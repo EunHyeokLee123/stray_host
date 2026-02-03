@@ -60,6 +60,13 @@ public class PetService {
     }
 
 
+    public CommonResDto getTotalCount() {
+
+        Integer result = animalsRepository.countAllAnimal();
+
+        return new CommonResDto(HttpStatus.OK, "모든 유기동물의 수 찾음", result);
+    }
+
     private PetDetailResDto getEntity(String desertionNo) {
         Optional<StrayAnimalEntity> result = animalsRepository.findByDesertionNo(desertionNo);
         if(result.isPresent()) {
@@ -84,5 +91,4 @@ public class PetService {
             throw new CommonException(ErrorCode.INVALID_PARAMETER, "옳지 않은 기기정보입니다.");
         }
     }
-
 }

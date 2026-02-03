@@ -39,6 +39,11 @@ public class PetController {
         return new ResponseEntity<>(resDto, HttpStatus.OK);
     }
     
+    @GetMapping("/total")
+    public ResponseEntity<?> getTotal() {
+        CommonResDto resDto = petService.getTotalCount();
 
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
 
 }
