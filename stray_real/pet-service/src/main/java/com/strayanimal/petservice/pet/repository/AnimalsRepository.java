@@ -45,4 +45,7 @@ public interface AnimalsRepository extends JpaRepository<StrayAnimalEntity, Stri
     @Query("SELECT s FROM StrayAnimalEntity s WHERE s.rfidCd is not null AND s.rfidCd = :rfid")
     Optional<StrayAnimalEntity> findByRfid(@Param("rfid") String rfid);
 
+    @Query("SELECT COUNT(s) FROM StrayAnimalEntity s WHERE s.rfidCd is not null")
+    Integer countRfid();
+
 }

@@ -80,6 +80,13 @@ public class PetService {
         }
     }
 
+    public CommonResDto findCountRfid() {
+
+        Integer result = animalsRepository.countRfid();
+
+        return new CommonResDto(HttpStatus.OK, "등록칩이 있는 동물의 수 찾음", result);
+    }
+
     private PetDetailResDto getEntity(String desertionNo) {
         Optional<StrayAnimalEntity> result = animalsRepository.findByDesertionNo(desertionNo);
         if(result.isPresent()) {
@@ -113,5 +120,4 @@ public class PetService {
         }
         return input;
     }
-
 }

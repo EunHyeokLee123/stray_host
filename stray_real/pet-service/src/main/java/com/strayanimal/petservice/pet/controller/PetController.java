@@ -54,4 +54,11 @@ public class PetController {
         return new ResponseEntity<>(resDto, HttpStatus.OK);
     }
 
+    @GetMapping("/rfid")
+    public ResponseEntity<?> getRfid() {
+        CommonResDto resDto = petService.findCountRfid();
+
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
+
 }
