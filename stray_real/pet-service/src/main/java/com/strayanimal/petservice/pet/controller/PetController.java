@@ -2,6 +2,7 @@ package com.strayanimal.petservice.pet.controller;
 
 import com.strayanimal.petservice.common.dto.CommonResDto;
 import com.strayanimal.petservice.pet.dto.SearchDto;
+import com.strayanimal.petservice.pet.dto.req.PetSearchDto;
 import com.strayanimal.petservice.pet.service.PetService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -42,6 +43,13 @@ public class PetController {
     @GetMapping("/total")
     public ResponseEntity<?> getTotal() {
         CommonResDto resDto = petService.getTotalCount();
+
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
+
+    @PostMapping("/find")
+    public ResponseEntity<?> findByRfid(@Valid @RequestBody PetSearchDto searchDto) {
+        CommonResDto resDto = petService.findByRfid(searchDto);
 
         return new ResponseEntity<>(resDto, HttpStatus.OK);
     }

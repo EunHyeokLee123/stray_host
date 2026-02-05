@@ -4,11 +4,13 @@ import com.strayanimal.petservice.common.dto.CommonResDto;
 import com.strayanimal.petservice.common.enumeration.ErrorCode;
 import com.strayanimal.petservice.common.exception.CommonException;
 import com.strayanimal.petservice.pet.dto.SearchDto;
+import com.strayanimal.petservice.pet.dto.req.PetSearchDto;
 import com.strayanimal.petservice.pet.dto.res.PetDetailResDto;
 import com.strayanimal.petservice.pet.dto.res.PetListResDto;
 import com.strayanimal.petservice.pet.entity.StrayAnimalEntity;
 import com.strayanimal.petservice.pet.repository.AnimalsRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -67,6 +69,17 @@ public class PetService {
         return new CommonResDto(HttpStatus.OK, "모든 유기동물의 수 찾음", result);
     }
 
+    public CommonResDto findByRfid(@Valid PetSearchDto searchDto) {
+
+        Optional<StrayAnimalEntity> found = animalsRepository.findByRfid(isValidRfid(searchDto.getRfid()));
+        if(found.isPresent()) {
+            return new CommonResDto(HttpStatus.FOUND, "해당하는 아이 찾음", new PetDetailResDto(found.get()));
+        }
+        else {
+            return new CommonResDto(HttpStatus.OK, "해당하는 아이 없음", null);
+        }
+    }
+
     private PetDetailResDto getEntity(String desertionNo) {
         Optional<StrayAnimalEntity> result = animalsRepository.findByDesertionNo(desertionNo);
         if(result.isPresent()) {
@@ -91,4 +104,14 @@ public class PetService {
             throw new CommonException(ErrorCode.INVALID_PARAMETER, "옳지 않은 기기정보입니다.");
         }
     }
+
+    private String isValidRfid(String input) {
+        for (int i = 0; i < input.length(); i++) {
+            if(!Character.isDigit(input.charAt(i))) {
+                throw new CommonException(ErrorCode.BAD_REQUEST, "옳지 않은 값입니다.");
+            }
+        }
+        return input;
+    }
+
 }
