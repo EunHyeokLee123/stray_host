@@ -4,12 +4,12 @@ import com.strayanimal.petservice.common.dto.CommonResDto;
 import com.strayanimal.petservice.common.enumeration.ErrorCode;
 import com.strayanimal.petservice.common.exception.CommonException;
 import com.strayanimal.petservice.pet.dto.SearchDto;
+import com.strayanimal.petservice.pet.dto.req.PetFavorReqDto;
 import com.strayanimal.petservice.pet.dto.req.PetSearchDto;
 import com.strayanimal.petservice.pet.dto.res.PetDetailResDto;
 import com.strayanimal.petservice.pet.dto.res.PetListResDto;
 import com.strayanimal.petservice.pet.entity.StrayAnimalEntity;
 import com.strayanimal.petservice.pet.repository.AnimalsRepository;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -85,6 +86,15 @@ public class PetService {
         Integer result = animalsRepository.countRfid();
 
         return new CommonResDto(HttpStatus.OK, "등록칩이 있는 동물의 수 찾음", result);
+    }
+
+    public CommonResDto findMyFavor(@Valid PetFavorReqDto reqDto) {
+
+        List<StrayAnimalEntity> mid = animalsRepository.findMyFavor(reqDto.getIds());
+
+        List<PetListResDto> resDto = mid.stream().map(PetListResDto::from).toList();
+
+        return new CommonResDto(HttpStatus.OK, "즐겨찾기 목록 찾음", resDto);
     }
 
     private PetDetailResDto getEntity(String desertionNo) {

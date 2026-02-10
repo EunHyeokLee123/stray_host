@@ -1,7 +1,9 @@
 package com.strayanimal.petservice.pet.repository;
 
 import com.strayanimal.petservice.pet.dto.SearchDto;
+import com.strayanimal.petservice.pet.dto.req.PetFavorReqDto;
 import com.strayanimal.petservice.pet.entity.StrayAnimalEntity;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.data.domain.Page;
@@ -10,6 +12,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -47,5 +50,8 @@ public interface AnimalsRepository extends JpaRepository<StrayAnimalEntity, Stri
 
     @Query("SELECT COUNT(s) FROM StrayAnimalEntity s WHERE s.rfidCd is not null")
     Integer countRfid();
+
+    @Query("SELECT s FROM StrayAnimalEntity s WHERE s.desertionNo in :list")
+    List<StrayAnimalEntity> findMyFavor(@Param("list") List<String> ids);
 
 }

@@ -2,6 +2,7 @@ package com.strayanimal.petservice.pet.controller;
 
 import com.strayanimal.petservice.common.dto.CommonResDto;
 import com.strayanimal.petservice.pet.dto.SearchDto;
+import com.strayanimal.petservice.pet.dto.req.PetFavorReqDto;
 import com.strayanimal.petservice.pet.dto.req.PetSearchDto;
 import com.strayanimal.petservice.pet.service.PetService;
 import jakarta.validation.Valid;
@@ -57,6 +58,13 @@ public class PetController {
     @GetMapping("/rfid")
     public ResponseEntity<?> getRfid() {
         CommonResDto resDto = petService.findCountRfid();
+
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
+
+    @PostMapping("/favor")
+    public ResponseEntity<?> getMyFavor(@Valid @RequestBody PetFavorReqDto reqDto) {
+        CommonResDto resDto = petService.findMyFavor(reqDto);
 
         return new ResponseEntity<>(resDto, HttpStatus.OK);
     }
