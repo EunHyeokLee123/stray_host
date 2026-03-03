@@ -16,18 +16,18 @@ import java.util.Optional;
 public interface FestivalRepository extends JpaRepository<FestivalEntity, String> {
 
     // addr이 없는 값은 뽑지 않음.
-    @Query("SELECT f FROM FestivalEntity f WHERE f.addr is not null AND f.startDate is not null AND f.startDate >= :today")
+    @Query("SELECT f FROM FestivalEntity f WHERE f.addr is not null AND f.startDate is not null AND f.endDate is not null AND f.endDate >= :today")
     Page<FestivalEntity> findValidList(Pageable pageable, @Param("today") LocalDate today);
 
     @Query("SELECT f FROM FestivalEntity f WHERE f.festivalId = :id")
     Optional<FestivalEntity> findId(@Param("id") Long id);
 
     @Query("SELECT DISTINCT SUBSTRING(f.addr, 1, 2) FROM FestivalEntity f WHERE " +
-            "f.addr is not null AND f.startDate is not null AND f.startDate >= :today")
+            "f.addr is not null AND f.startDate is not null AND f.endDate is not null AND f.endDate >= :today")
     List<String> findRegion(@Param("today") LocalDate today);
 
-    @Query("SELECT f FROM FestivalEntity f WHERE f.addr is not null AND f.startDate is not null AND " +
-            "f.startDate >= :today AND SUBSTRING(f.addr, 1, 2) = :region")
+    @Query("SELECT f FROM FestivalEntity f WHERE f.addr is not null AND f.startDate is not null AND f.endDate is not null " +
+            "AND f.endDate >= :today AND SUBSTRING(f.addr, 1, 2) = :region")
     Page<FestivalEntity> findByRegion(Pageable pageable, @Param("region") String region,
                                       @Param("today") LocalDate now);
 
