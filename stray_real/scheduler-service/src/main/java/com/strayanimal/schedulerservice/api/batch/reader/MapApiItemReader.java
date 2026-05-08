@@ -40,11 +40,13 @@ public class MapApiItemReader implements ItemReader<MapEntity> {
             int pageNo = 1;
             int numOfRows = 500;
             int totalCount;
-            String serviceKey = "JSn0E7LvFMcdl%2Bt%2FuNmxvKAfkGfvNVUlemWjY4O5%2BRNFksB7TRlw%2BXuaMe6Zz7Yt5QCYPl3G6Tc2t8jx6FUePg%3D%3D";
+            String serviceKey = "8f9eaa77d16f15956feee347df08423d25a4027ba135615541d84a1910a0ea8e";
+            //String serviceKey = "JSn0E7LvFMcdl%2Bt%2FuNmxvKAfkGfvNVUlemWjY4O5%2BRNFksB7TRlw%2BXuaMe6Zz7Yt5QCYPl3G6Tc2t8jx6FUePg%3D%3D";
 
             do {
                 String url = String.format(
-                        "https://apis.data.go.kr/B551011/KorPetTourService/areaBasedList?serviceKey=%s&numOfRows=%d&pageNo=%d&MobileOS=ETC&MobileApp=nyangmong&_type=json",
+                        //"https://apis.data.go.kr/B551011/KorPetTourService/areaBasedList?serviceKey=%s&numOfRows=%d&pageNo=%d&MobileOS=ETC&MobileApp=nyangmong&_type=json",
+                        "https://apis.data.go.kr/B551011/KorPetTourService2/ldongCode2?serviceKey=%s&numOfRows=%d&pageNo=%d&MobileOS=ETC&MobileApp=nyangmong&_type=json",
                         serviceKey, numOfRows, pageNo);
 
                 HttpRequest request = HttpRequest.newBuilder()
@@ -54,6 +56,9 @@ public class MapApiItemReader implements ItemReader<MapEntity> {
 
                 HttpResponse<String> response = HttpClient.newHttpClient()
                         .send(request, HttpResponse.BodyHandlers.ofString());
+
+                System.out.println(response);
+                System.out.println(response.body());
 
                 JsonNode body = mapper.readTree(response.body())
                         .path("response")

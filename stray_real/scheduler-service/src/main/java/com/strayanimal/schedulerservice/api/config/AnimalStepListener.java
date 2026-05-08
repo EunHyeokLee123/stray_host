@@ -1,15 +1,23 @@
 package com.strayanimal.schedulerservice.api.config;
 
 import com.strayanimal.schedulerservice.api.batch.writer.AnimalCustomItemWriter;
+import com.strayanimal.schedulerservice.api.entity.Cat_proc;
+import com.strayanimal.schedulerservice.api.entity.Dog_proc;
+import com.strayanimal.schedulerservice.api.entity.PetColor;
 import com.strayanimal.schedulerservice.api.entity.StrayAnimalEntity;
 import com.strayanimal.schedulerservice.api.repository.AnimalsRepository;
+import com.strayanimal.schedulerservice.api.repository.CatRepository;
+import com.strayanimal.schedulerservice.api.repository.DogRepository;
+import com.strayanimal.schedulerservice.api.repository.PetColorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.StepExecutionListener;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -34,9 +42,17 @@ public class AnimalStepListener implements StepExecutionListener {
 
     // DB 접근용 JPA Repository (전체 조회 및 삭제를 수행)
     private final AnimalsRepository animalsRepository;
+    private final PetColorRepository petColorRepository;
 
     // 이번 Step 동안 API로부터 수집한 유기번호 리스트를 담고 있는 Writer
     private final AnimalCustomItemWriter itemWriter;
+
+    // python 작업을 위한 Job 테이블
+    private final DogRepository dogRepository;
+    private final CatRepository catRepository;
+
+    @Value("${spring.profiles.active}")
+    private String now;
 
     /**
      * Step 실행 이후에 호출되는 메서드.
@@ -59,6 +75,30 @@ public class AnimalStepListener implements StepExecutionListener {
 
             if (notInApi) {
                 animalsRepository.delete(entity);
+                // 삭제된 유기동물 데이터면
+                // 색상정보도 삭제함.
+                Optional<PetColor> found
+                        = petColorRepository.findByDesertionNo(entity.getDesertionNo());
+                found.ifPresent(petColorRepository::delete);
+                if(now.equals("default")) {
+                    if (entity.getUpKindNm().equals("개")) {
+                        Optional<Dog_proc> fd = dogRepository.findByDe(entity.getDesertionNo());
+                        if (fd.isPresent()) {
+                            dogRepository.delete(fd.get());
+                            dogRepository.save(new Dog_proc(
+                                    fd.get().getDesertion_no(), "Delete", "Pending"
+                            ));
+                        }
+                    } else if (entity.getUpKindNm().equals("고양이")) {
+                        Optional<Cat_proc> fd = catRepository.findByDe(entity.getDesertionNo());
+                        if (fd.isPresent()) {
+                            catRepository.delete(fd.get());
+                            catRepository.save(new Cat_proc(
+                                    fd.get().getDesertion_no(), "Delete", "Pending"
+                            ));
+                        }
+                    }
+                }
             }
         }
 

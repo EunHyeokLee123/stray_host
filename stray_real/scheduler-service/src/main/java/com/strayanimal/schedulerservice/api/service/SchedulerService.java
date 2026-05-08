@@ -1,6 +1,11 @@
 package com.strayanimal.schedulerservice.api.service;
 
+import com.strayanimal.schedulerservice.api.batch.dto.ShelterDetail;
 import com.strayanimal.schedulerservice.api.entity.PetCulture;
+import com.strayanimal.schedulerservice.api.entity.PetShelter;
+import com.strayanimal.schedulerservice.api.entity.StrayAnimalEntity;
+import com.strayanimal.schedulerservice.api.repository.AnimalsRepository;
+import com.strayanimal.schedulerservice.api.repository.ShelterRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +24,9 @@ public class SchedulerService {
     private final EntityManager entityManager;
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    private final ShelterRepository shelterRepository;
+    private final AnimalsRepository animalsRepository;
 
     private Map<String, String> tableNames = Map.of("동물약국", "drug_store",
             "문예회관", "literary_center", "미술관", "pet_art", "미용", "pet_style",
@@ -121,4 +130,21 @@ public class SchedulerService {
         namedParameterJdbcTemplate.update(sql, paramMap);
     }
 
+    public ShelterDetail getPetDetail(String desNo) {
+
+        Optional<StrayAnimalEntity> found =
+                animalsRepository.findByDesertionNo(desNo);
+        if(found.isPresent()) {
+            Optional<PetShelter> byName = shelterRepository.findByName(found.get().getCareNm());
+            if(byName.isPresent()) {
+                return ShelterDetail.fromEntity(byName.get(), desNo);
+            }
+            else {
+                return null;
+            }
+        }
+        else {
+            return null;
+        }
+    }
 }

@@ -1,13 +1,18 @@
 package com.strayanimal.schedulerservice.api.batch.writer;
 
+import com.strayanimal.schedulerservice.api.entity.Cat_proc;
+import com.strayanimal.schedulerservice.api.entity.Dog_proc;
 import com.strayanimal.schedulerservice.api.entity.StrayAnimalEntity;
 import com.strayanimal.schedulerservice.api.repository.AnimalsRepository;
+import com.strayanimal.schedulerservice.api.repository.CatRepository;
+import com.strayanimal.schedulerservice.api.repository.DogRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +33,13 @@ public class AnimalCustomItemWriter implements ItemWriter<StrayAnimalEntity> {
 
     // Spring Data JPA를 통한 DB 접근용 Repository
     private final AnimalsRepository animalsRepository;
+
+    // python 작업을 위한 Job 테이블
+    private final DogRepository dogRepository;
+    private final CatRepository catRepository;
+
+    @Value("${spring.profiles.active}")
+    private String now;
 
     // 이번 배치에서 API로 수집한 모든 유기번호를 모아놓는 Set
     // 이후 "DB에는 있는데, API에는 없는 데이터"를 삭제할 때 사용할 수 있음
@@ -57,11 +69,29 @@ public class AnimalCustomItemWriter implements ItemWriter<StrayAnimalEntity> {
                 if (isChanged(existing, incoming)) {
                     existing.updateIfChanged(incoming);  // 변경된 필드만 업데이트
                     animalsRepository.save(existing);    // DB 저장
+                    if(now.equals("default")) {
+                        if (existing.getUpKindNm().equals("개")) {
+                            dogRepository.save(new Dog_proc(existing.getDesertionNo(),
+                                    "Update", "Pending"));
+                        } else if (existing.getUpKindNm().equals("고양이")) {
+                            catRepository.save(new Cat_proc(existing.getDesertionNo(),
+                                    "Update", "Pending"));
+                        }
+                    }
                 }
 
             } else {
                 // DB에 존재하지 않는 유기번호 → 신규 데이터로 저장
                 animalsRepository.save(incoming);
+                if(now.equals("default")) {
+                    if (incoming.getUpKindNm().equals("개")) {
+                        dogRepository.save(new Dog_proc(incoming.getDesertionNo(),
+                                "Insert", "Pending"));
+                    } else if (incoming.getUpKindNm().equals("고양이")) {
+                        catRepository.save(new Cat_proc(incoming.getDesertionNo(),
+                                "Insert", "Pending"));
+                    }
+                }
             }
         }
     }

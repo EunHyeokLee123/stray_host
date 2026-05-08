@@ -1,0 +1,34 @@
+package com.strayanimal.schedulerservice.api.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import lombok.Builder;
+import lombok.Getter;
+
+import java.util.List;
+
+@Getter
+@Builder
+public class CategoryDto {
+
+    // 지역 대분류 (예: 경기도, 서울특별시)
+    @NotBlank(message = "region은 필수 값입니다.")
+    private String region;
+
+    // 축종 개, 고양이, 기타
+    @NotBlank(message = "kind는 필수 값입니다.")
+    @Pattern(
+            regexp = "개|고양이|기타",
+            message = "kind는 개, 고양이, 기타 중 하나여야 합니다."
+    )
+    private String kind;
+
+    // 0은 pc, 1은 태블릿, 2는 모바일
+    // 0 -> 9개, 1 - 8개, 2 - 6개
+    @NotNull
+    private int device;
+
+    private List<String> color;
+
+}

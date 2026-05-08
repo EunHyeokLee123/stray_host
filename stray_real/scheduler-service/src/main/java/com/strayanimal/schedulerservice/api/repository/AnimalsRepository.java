@@ -1,6 +1,7 @@
 package com.strayanimal.schedulerservice.api.repository;
 
 import com.strayanimal.schedulerservice.api.entity.StrayAnimalEntity;
+import com.strayanimal.schedulerservice.api.repository.custom.AnimalsRepositoryCustom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -11,7 +12,8 @@ import java.util.Optional;
  * AnimalsEntity에 대한 DB 접근 인터페이스(JPA Repository)
  * 기본 CRUD 기능 제공 + desertionNo 기반 조회/삭제 기능 추가
  */
-public interface AnimalsRepository extends JpaRepository<StrayAnimalEntity, String> {
+public interface AnimalsRepository extends JpaRepository<StrayAnimalEntity, String>,
+        AnimalsRepositoryCustom {
 
     /**
      * desertionNo를 기준으로 동물 데이터 조회
